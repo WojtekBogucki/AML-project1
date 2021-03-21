@@ -57,16 +57,21 @@ save(spambase_split_test, file = "data/spambase_test.Rda")
 # mammography -------------------------------------------------------------------
 
 mammography <- read.table("data/mammography.csv", header = TRUE, sep = ",", dec = ".")
-forex$Class <- as.factor(ifelse(forex$Class, 1, 0))
-forex <- forex %>% select(-Timestamp)
+mammography$class <- as.factor(ifelse(mammography$class==1, 1, 0))
 head(mammography)
 
-describe(forex)
-status(forex)
-data_integrity(forex)
-plot_num(forex)
-correlation_table(forex, "Class")
+describe(mammography)
+status(mammography)
+data_integrity(mammography)
+plot_num(mammography)
+correlation_table(mammography, "class")
 
+set.seed(123)
+mammography_split <- split_data(mammography)
+mammography_split_train <- mammography_split$train
+mammography_split_test <- mammography_split$test
+save(mammography_split_train, file = "data/mammography_train.Rda")
+save(mammography_split_test, file = "data/mammography_test.Rda")
 
 
 # skin segmentation -------------------------------------------------------
