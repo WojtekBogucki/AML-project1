@@ -54,12 +54,12 @@ spambase_split_test <- spambase_split$test
 save(spambase_split_train, file = "data/spambase_train.Rda")
 save(spambase_split_test, file = "data/spambase_test.Rda")
 
-# FOREX -------------------------------------------------------------------
+# mammography -------------------------------------------------------------------
 
-forex <- read.table("data/FOREX.csv", header = TRUE, sep = ",", dec = ".")
+mammography <- read.table("data/mammography.csv", header = TRUE, sep = ",", dec = ".")
 forex$Class <- as.factor(ifelse(forex$Class, 1, 0))
 forex <- forex %>% select(-Timestamp)
-head(forex)
+head(mammography)
 
 describe(forex)
 status(forex)
