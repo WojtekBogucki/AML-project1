@@ -1,28 +1,9 @@
-load("data/jain_train.Rda")
-jain_split_train
-
-X <- as.matrix(jain_split_train[,-ncol(jain_split_train)])
-
-
-Y <- jain_split_train[,ncol(jain_split_train)]
-levels(Y) <- c(0,1)
-Y <- as.matrix(as.numeric(as.vector(Y)))
-Y
 
 sigmoid <- function(x){
   sigm <- 1/(1 + exp(-x))
   return(sigm)
 }
 
-cost_fun <- function(m, g, Y){
-  cost <- -sum(Y*log(g + 1e-8) + (1-Y)*log(1-g + 1e-8))/m
-  return(cost)
-}
-
-update_theta <- function(X,Y, theta, lr, m, g){
-  theta <- theta - lr*(t(X) %*% (g - Y)/m)
-  return(theta)
-}
 
 init_theta <- function(n, type="uniform"){
   if(type=="uniform") theta <- runif(n)
@@ -30,8 +11,8 @@ init_theta <- function(n, type="uniform"){
 }
 
 gradient_descent <- function(X,Y, n_iter, lr){
+  X <- cbind(1, X)
   m <- nrow(X)
-  X <- cbind(rep(1, m), X)
   n <- ncol(X)
   theta <- init_theta(n)
   for(i in 1:n_iter){
@@ -40,13 +21,20 @@ gradient_descent <- function(X,Y, n_iter, lr){
     theta <- theta - lr*(t(X) %*% (g - Y)/m)
     print(paste0("Cost: ", round(cost,4)))
   }
-  return(round(sigmoid(X %*% theta)))
+  structure(.Data = list(theta = theta), class = c("gd", "logreg", "model"))
 }
 
-stoch_gradient_descent <- function(X,Y, n_iter, lr){
-  m <- nrow(X)
-  X <- cbind(rep(1, m), X)
+predict.gradient_descent <- function(object, X, prob = FALSE, ...){
+  X <- cbind(1, X)
+  p <- sigmoid(X %*% object$theta)
+  if(prob) return(p)
+  else return(round(p))
+}
+
+sgd <- function(X,Y, n_iter, lr){
+  X <- cbind(1, X)
   n <- ncol(X)
+  m <- nrow(X)
   theta <- init_theta(n)
   for(i in 1:n_iter){
     idx <- sample(1:m, m)
@@ -62,11 +50,9 @@ stoch_gradient_descent <- function(X,Y, n_iter, lr){
     }
     print(paste0("Cost: ", round(cost/m,4)))
   }
-  return(round(sigmoid(X %*% theta)))
+  structure(.Data = list(theta = theta), class = c("sgd", "logreg", "model"))
 }
 
-y_hat <- gradient_descent(X, Y, 1000, 0.02)
-y_hat2 <- stoch_gradient_descent(X, Y, 100, 0.005)
-source("src/measure.R")
-measure(y_hat, Y)
-measure(y_hat2, Y)
+
+
+
