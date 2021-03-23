@@ -15,6 +15,8 @@ split_data <- function(data, ratio=0.8){
 
 jain <- read.table("data/jain.txt", header = FALSE, sep="\t", dec = ".")
 jain$V3 <- as.factor(jain$V3)
+levels(jain$V3) <- c(0,1)
+jain$V3 <- as.numeric(as.vector(jain$V3))
 
 ggplot(data=jain, aes(x=V1, y=V2, color=V3)) + geom_point()
 
@@ -27,10 +29,10 @@ correlation_table(jain, "V3")
 
 set.seed(123)
 jain_split <- split_data(jain)
-jain_split_train <- jain_split$train
-jain_split_test <- jain_split$test
-save(jain_split_train, file = "data/jain_train.Rda")
-save(jain_split_test, file = "data/jain_test.Rda")
+jain_train <- jain_split$train
+jain_test <- jain_split$test
+save(jain_train, file = "data/jain_train.Rda")
+save(jain_test, file = "data/jain_test.Rda")
 
 # spambase ----------------------------------------------------------------
 
@@ -49,15 +51,15 @@ correlation_table(spambase, "TARGET")
 
 set.seed(123)
 spambase_split <- split_data(spambase)
-spambase_split_train <- spambase_split$train
-spambase_split_test <- spambase_split$test
-save(spambase_split_train, file = "data/spambase_train.Rda")
-save(spambase_split_test, file = "data/spambase_test.Rda")
+spambase_train <- spambase_split$train
+spambase_test <- spambase_split$test
+save(spambase_train, file = "data/spambase_train.Rda")
+save(spambase_test, file = "data/spambase_test.Rda")
 
 # mammography -------------------------------------------------------------------
 
 mammography <- read.table("data/mammography.csv", header = TRUE, sep = ",", dec = ".")
-mammography$class <- as.factor(ifelse(mammography$class==1, 1, 0))
+mammography$class <- ifelse(mammography$class==1, 1, 0)
 head(mammography)
 
 describe(mammography)
@@ -68,16 +70,18 @@ correlation_table(mammography, "class")
 
 set.seed(123)
 mammography_split <- split_data(mammography)
-mammography_split_train <- mammography_split$train
-mammography_split_test <- mammography_split$test
-save(mammography_split_train, file = "data/mammography_train.Rda")
-save(mammography_split_test, file = "data/mammography_test.Rda")
+mammography_train <- mammography_split$train
+mammography_test <- mammography_split$test
+save(mammography_train, file = "data/mammography_train.Rda")
+save(mammography_test, file = "data/mammography_test.Rda")
 
 
 # skin segmentation -------------------------------------------------------
 
 skin_seg <- read.table("data/skin-segmentation.csv", header = TRUE, sep = ",", dec = ".")
 skin_seg$Class <- as.factor(skin_seg$Class)
+levels(skin_seg$Class) <- c(0,1)
+skin_seg$Class <- as.numeric(as.vector(skin_seg$Class))
 head(skin_seg)
 
 describe(skin_seg)
@@ -88,10 +92,10 @@ correlation_table(skin_seg, "Class")
 
 set.seed(123)
 skin_seg_split <- split_data(skin_seg)
-skin_seg_split_train <- skin_seg_split$train
-skin_seg_split_test <- skin_seg_split$test
-save(skin_seg_split_train, file = "data/skin_seg_train.Rda")
-save(skin_seg_split_test, file = "data/skin_seg_test.Rda")
+skin_seg_train <- skin_seg_split$train
+skin_seg_test <- skin_seg_split$test
+save(skin_seg_train, file = "data/skin_seg_train.Rda")
+save(skin_seg_test, file = "data/skin_seg_test.Rda")
 
 # occupancy ---------------------------------------------------------------
 occupancy1 <- read.table("data/datatest.txt", header = TRUE, sep = ",", dec = ".")
@@ -99,7 +103,6 @@ occupancy2 <- read.table("data/datatest2.txt", header = TRUE, sep = ",", dec = "
 occupancy3 <- read.table("data/datatraining.txt", header = TRUE, sep = ",", dec = ".")
 occupancy <- rbind(occupancy1, occupancy2, occupancy3)
 occupancy <- occupancy %>% select(-date)
-occupancy$Occupancy <- as.factor(occupancy$Occupancy)
 head(occupancy)
 
 
@@ -112,7 +115,7 @@ cor(occupancy[,-6])
 
 set.seed(123)
 occupancy_split <- split_data(occupancy)
-occupancy_split_train <- occupancy_split$train
-occupancy_split_test <- occupancy_split$test
-save(occupancy_split_train, file = "data/occupancy_train.Rda")
-save(occupancy_split_test, file = "data/occupancy_test.Rda")
+occupancy_train <- occupancy_split$train
+occupancy_test <- occupancy_split$test
+save(occupancy_train, file = "data/occupancy_train.Rda")
+save(occupancy_test, file = "data/occupancy_test.Rda")
