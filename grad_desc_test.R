@@ -1,5 +1,6 @@
 source("src/measure.R")
 source("src/gradient_descent.R")
+source("src/iwls.R")
 source("src/util.R")
 
 # Jain --------------------------------------------------------------------
@@ -17,28 +18,37 @@ model <- gradient_descent(X, Y, 1e-4, 2000, 0.01)
 y_hat <- predict(model, X_test)
 model2 <- sgd(X, Y, 1e-4 , 1000, 0.005)
 y_hat2 <- predict(model2, X_test)
-
+model3 <- iwls(X, Y)
+y_hat3 <- predict(model3, X_test)
 measure(y_hat, Y_test)
 measure(y_hat2, Y_test)
+measure(y_hat3, Y_test)
 plot(model)
 plot(model2)
+plot(model3)
 # Spambase ----------------------------------------------------------------
 load("data/spambase_train.Rda")
 load("data/spambase_test.Rda")
-
+head(spambase_train)
 X <- as.matrix(spambase_train[,-ncol(spambase_train)])
 Y <- as.matrix(spambase_train[,ncol(spambase_train)])
 
 X_test <- as.matrix(spambase_test[,-ncol(spambase_test)])
 Y_test <- as.matrix(spambase_test[,ncol(spambase_test)])
 
-model <- gradient_descent(X, Y, 1e-4, max_iter=1000, lr=0.005)
+model <- gradient_descent(X, Y, 1e-4, max_iter=1000, lr=0.01)
 y_hat <- predict(model, X_test)
-model2 <- sgd(X, Y, 1e-4, 100, 0.005)
+model2 <- sgd(X, Y, 1e-4, 100, 1e-2)
 y_hat2 <- predict(model2, X_test)
+model3 <- iwls(X, Y)
+y_hat3 <- predict(model3, X_test)
 
 measure(y_hat, Y_test)
 measure(y_hat2, Y_test)
+measure(y_hat3, Y_test)
+plot(model)
+plot(model2)
+plot(model3)
 
 
 # mammography -------------------------------------------------------------
