@@ -1,7 +1,7 @@
 require(Matrix)
 source('src/util.R')
 
-iwls <- function(X, y, epsilon = 1e-4, max_iter = 1000){
+iwls <- function(X, y, epsilon = 1e-7, max_iter = 100){
   
   m <- nrow(X)
   m_vec <- 1:m
