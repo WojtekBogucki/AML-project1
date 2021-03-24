@@ -1,4 +1,5 @@
 require(Matrix)
+source('src/util.R')
 
 iwls <- function(X, y, epsilon = 1e-4, max_iter = 1000){
   
@@ -6,7 +7,7 @@ iwls <- function(X, y, epsilon = 1e-4, max_iter = 1000){
   m_vec <- 1:m
   X <- cbind(1, X)
   beta <- as.matrix(rep(0, length.out = ncol(X)))
-  p <- 1 / (1 + exp(- X %*% beta))
+  p <- sigmoid(X %*% beta)
   all_costs <- c(-sum(y*log(p + 1e-8) + (1-y)*log(1-p + 1e-8))/m)
   
   for(i in 1:max_iter){
@@ -15,7 +16,7 @@ iwls <- function(X, y, epsilon = 1e-4, max_iter = 1000){
     W_inv <- sparseMatrix(m_vec, m_vec, x = p_vec)
     z <- X%*%beta + W_inv %*% (y - p)
     beta <- solve(t(X) %*% W %*% X) %*% t(X) %*% W %*% z
-    p <- 1 / (1 + exp(- X %*% beta))
+    p <- sigmoid(X %*% beta)
     
     all_costs[i+1] <- -sum(y*log(p + 1e-8) + (1-y)*log(1-p + 1e-8))/m
 
@@ -30,12 +31,3 @@ iwls <- function(X, y, epsilon = 1e-4, max_iter = 1000){
             class = c("iwls", "logreg", "model"))
 }
 
-predict.iwls <- function(object, X, prob = FALSE, ...){
-  X <- cbind(1, X)
-  p = 1 / (1 + exp(- X %*% object$beta))
-  if(prob){
-    return(p)
-  }else{
-    return(round(p))
-  }
-}

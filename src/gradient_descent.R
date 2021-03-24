@@ -1,9 +1,4 @@
-
-sigmoid <- function(x){
-  sigm <- 1/(1 + exp(-x))
-  return(sigm)
-}
-
+source('src/util.R')
 
 init_theta <- function(n, type="uniform"){
   if(type=="uniform") theta <- runif(n)
@@ -27,12 +22,6 @@ gradient_descent <- function(X,Y, epsilon  = 1e-7, max_iter = 100, lr = 0.01){
   structure(.Data = list(beta = theta, costs = all_costs, iters = i), class = c("gd", "logreg", "model"))
 }
 
-predict.gd <- function(object, X, prob = FALSE, ...){
-  X <- cbind(1, X)
-  p <- sigmoid(X %*% object$beta)
-  if(prob) return(p)
-  else return(round(p))
-}
 
 sgd <- function(X,Y, epsilon = 1e-7, max_iter = 100, lr = 0.01){
   X <- cbind(1, X)
@@ -58,7 +47,3 @@ sgd <- function(X,Y, epsilon = 1e-7, max_iter = 100, lr = 0.01){
   }
   structure(.Data = list(beta = theta, costs = all_costs, iters = i), class = c("gd", "logreg", "model"))
 }
-
-
-
-
