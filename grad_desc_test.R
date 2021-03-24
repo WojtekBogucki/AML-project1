@@ -1,5 +1,6 @@
 source("src/measure.R")
 source("src/gradient_descent.R")
+source("src/util.R")
 
 # Jain --------------------------------------------------------------------
 load("data/jain_train.Rda")
@@ -19,8 +20,8 @@ y_hat2 <- predict(model2, X_test)
 
 measure(y_hat, Y_test)
 measure(y_hat2, Y_test)
-plot(X_test, col=y_hat+1)
-plot(0:model$iters, model$costs, type='l', main = "loss")
+plot(model)
+plot(model2)
 # Spambase ----------------------------------------------------------------
 load("data/spambase_train.Rda")
 load("data/spambase_test.Rda")
@@ -71,9 +72,9 @@ Y <- as.matrix(skin_seg_train[,ncol(skin_seg_train)])
 X_test <- as.matrix(skin_seg_test[,-ncol(skin_seg_test)])
 Y_test <- as.matrix(skin_seg_test[,ncol(skin_seg_test)])
 
-model <- gradient_descent(X, Y, 130, 0.001)
+model <- gradient_descent(X, Y, 1e-4, 200, 0.01)
 y_hat <- predict(model, X_test)
-model2 <- sgd(X, Y, 20, 0.02)
+model2 <- sgd(X, Y, 1e-4, 20, 0.02)
 y_hat2 <- predict(model2, X_test)
 
 table(y_hat, Y_test)
