@@ -17,6 +17,8 @@ jain <- read.table("data/jain.txt", header = FALSE, sep="\t", dec = ".")
 jain$V3 <- as.factor(jain$V3)
 levels(jain$V3) <- c(0,1)
 jain$V3 <- as.numeric(as.vector(jain$V3))
+n <- ncol(jain)
+jain[, -n] <- scale(jain[, -n])
 
 ggplot(data=jain, aes(x=V1, y=V2, color=V3)) + geom_point()
 
@@ -39,6 +41,8 @@ save(jain_test, file = "data/jain_test.Rda")
 spambase <- read.table("data/spambase.data", header = FALSE, sep = ",", dec = ".")
 spambase_names <- read.table("data/spambase_names.txt", header = FALSE, sep = ":",comment.char = "")
 colnames(spambase) <- spambase_names[,1]
+n <- ncol(spambase)
+spambase[, -n] <- scale(spambase[, -n])
 head(spambase)
 
 
@@ -59,6 +63,8 @@ save(spambase_test, file = "data/spambase_test.Rda")
 
 mammography <- read.table("data/mammography.csv", header = TRUE, sep = ",", dec = ".")
 mammography$class <- ifelse(mammography$class==1, 1, 0)
+n <- ncol(mammography)
+mammography[, -n] <- scale(mammography[, -n])
 head(mammography)
 
 describe(mammography)
@@ -81,6 +87,8 @@ skin_seg <- read.table("data/skin-segmentation.csv", header = TRUE, sep = ",", d
 skin_seg$Class <- as.factor(skin_seg$Class)
 levels(skin_seg$Class) <- c(0,1)
 skin_seg$Class <- as.numeric(as.vector(skin_seg$Class))
+n <- ncol(skin_seg)
+skin_seg[, -n] <- scale(skin_seg[, -n])
 head(skin_seg)
 
 describe(skin_seg)
@@ -102,6 +110,8 @@ occupancy2 <- read.table("data/datatest2.txt", header = TRUE, sep = ",", dec = "
 occupancy3 <- read.table("data/datatraining.txt", header = TRUE, sep = ",", dec = ".")
 occupancy <- rbind(occupancy1, occupancy2, occupancy3)
 occupancy <- occupancy %>% select(-date)
+n <- ncol(occupancy)
+occupancy[, -n] <- scale(occupancy[, -n])
 head(occupancy)
 
 
