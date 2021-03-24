@@ -12,13 +12,14 @@ Y <- as.matrix(jain_train[,ncol(jain_train)])
 X_test <- as.matrix(jain_test[,-ncol(jain_test)])
 Y_test <- as.matrix(jain_test[,ncol(jain_test)])
 
-model <- gradient_descent(X, Y, 1e-4, 20000, 0.001)
+model <- gradient_descent(X, Y, 1e-4, 2000, 0.01)
 y_hat <- predict(model, X_test)
 model2 <- sgd(X, Y, 1e-4 , 1000, 0.005)
 y_hat2 <- predict(model2, X_test)
 
 measure(y_hat, Y_test)
 measure(y_hat2, Y_test)
+plot(X_test, col=y_hat+1)
 
 # Spambase ----------------------------------------------------------------
 load("data/spambase_train.Rda")
@@ -30,9 +31,9 @@ Y <- as.matrix(spambase_train[,ncol(spambase_train)])
 X_test <- as.matrix(spambase_test[,-ncol(spambase_test)])
 Y_test <- as.matrix(spambase_test[,ncol(spambase_test)])
 
-model <- gradient_descent(X, Y, max_iter=1000, lr=0.0005)
+model <- gradient_descent(X, Y, 1e-4, max_iter=1000, lr=0.005)
 y_hat <- predict(model, X_test)
-model2 <- sgd(X, Y, 100, 0.005)
+model2 <- sgd(X, Y, 1e-4, 100, 0.005)
 y_hat2 <- predict(model2, X_test)
 
 measure(y_hat, Y_test)
