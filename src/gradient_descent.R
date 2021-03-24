@@ -19,12 +19,12 @@ gradient_descent <- function(X,Y, n_iter, lr){
     g <- sigmoid(X %*% theta)
     cost <- -sum(Y*log(g + 1e-8) + (1-Y)*log(1-g + 1e-8))/m
     theta <- theta - lr*(t(X) %*% (g - Y)/m)
-    print(paste0("Cost: ", round(cost,4)))
+    print(paste0("Epoch: ", i, " Cost: ", round(cost,4)))
   }
   structure(.Data = list(theta = theta), class = c("gd", "logreg", "model"))
 }
 
-predict.gradient_descent <- function(object, X, prob = FALSE, ...){
+predict.gd <- function(object, X, prob = FALSE, ...){
   X <- cbind(1, X)
   p <- sigmoid(X %*% object$theta)
   if(prob) return(p)
@@ -41,16 +41,16 @@ sgd <- function(X,Y, n_iter, lr){
     x_new <- X[idx,]
     y_new <- Y[idx]
     cost <- 0
-    for(i in 1:m){
-      x <- x_new[i,]
-      y <- y_new[i]
+    for(j in 1:m){
+      x <- x_new[j,]
+      y <- y_new[j]
       g <- sigmoid(x %*% theta)
       cost <- cost - (y*log(g + 1e-8) + (1-y)*log(1-g + 1e-8))
       theta <- theta - lr*(x * c(g - y))
     }
-    print(paste0("Cost: ", round(cost/m,4)))
+    print(paste0("Epoch: ", i, " Cost: ", round(cost/m,4)))
   }
-  structure(.Data = list(theta = theta), class = c("sgd", "logreg", "model"))
+  structure(.Data = list(theta = theta), class = c("gd", "logreg", "model"))
 }
 
 

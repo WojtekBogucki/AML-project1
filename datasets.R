@@ -39,7 +39,6 @@ save(jain_test, file = "data/jain_test.Rda")
 spambase <- read.table("data/spambase.data", header = FALSE, sep = ",", dec = ".")
 spambase_names <- read.table("data/spambase_names.txt", header = FALSE, sep = ":",comment.char = "")
 colnames(spambase) <- spambase_names[,1]
-spambase$TARGET <- as.factor(spambase$TARGET)
 head(spambase)
 
 
