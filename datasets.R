@@ -1,6 +1,7 @@
 library(ggplot2)
 library(dplyr)
 library(funModeling)
+library(corrplot)
 
 split_data <- function(data, ratio=0.8){
   idx <- sort(sample(nrow(data),nrow(data)*ratio))
@@ -17,6 +18,8 @@ jain <- read.table("data/jain.txt", header = FALSE, sep="\t", dec = ".")
 jain$V3 <- as.factor(jain$V3)
 levels(jain$V3) <- c(0,1)
 jain$V3 <- as.numeric(as.vector(jain$V3))
+n <- ncol(jain)
+jain[, -n] <- scale(jain[, -n])
 
 ggplot(data=jain, aes(x=V1, y=V2, color=V3)) + geom_point()
 
@@ -26,6 +29,7 @@ status(jain)
 data_integrity(jain)
 plot_num(jain)
 correlation_table(jain, "V3")
+corrplot(cor(jain), method = "number")
 
 set.seed(123)
 jain_split <- split_data(jain)
@@ -39,6 +43,8 @@ save(jain_test, file = "data/jain_test.Rda")
 spambase <- read.table("data/spambase.data", header = FALSE, sep = ",", dec = ".")
 spambase_names <- read.table("data/spambase_names.txt", header = FALSE, sep = ":",comment.char = "")
 colnames(spambase) <- spambase_names[,1]
+n <- ncol(spambase)
+spambase[, -n] <- scale(spambase[, -n])
 head(spambase)
 
 
@@ -47,6 +53,7 @@ status(spambase)
 data_integrity(spambase)
 plot_num(spambase)
 correlation_table(spambase, "TARGET")
+corrplot(cor(spambase), method = "color")
 
 set.seed(123)
 spambase_split <- split_data(spambase)
@@ -59,6 +66,8 @@ save(spambase_test, file = "data/spambase_test.Rda")
 
 mammography <- read.table("data/mammography.csv", header = TRUE, sep = ",", dec = ".")
 mammography$class <- ifelse(mammography$class==1, 1, 0)
+n <- ncol(mammography)
+mammography[, -n] <- scale(mammography[, -n])
 head(mammography)
 
 describe(mammography)
@@ -66,6 +75,7 @@ status(mammography)
 data_integrity(mammography)
 plot_num(mammography)
 correlation_table(mammography, "class")
+corrplot(cor(mammography), method = "number")
 
 set.seed(123)
 mammography_split <- split_data(mammography)
@@ -81,6 +91,8 @@ skin_seg <- read.table("data/skin-segmentation.csv", header = TRUE, sep = ",", d
 skin_seg$Class <- as.factor(skin_seg$Class)
 levels(skin_seg$Class) <- c(0,1)
 skin_seg$Class <- as.numeric(as.vector(skin_seg$Class))
+n <- ncol(skin_seg)
+skin_seg[, -n] <- scale(skin_seg[, -n])
 head(skin_seg)
 
 describe(skin_seg)
@@ -88,6 +100,7 @@ status(skin_seg)
 data_integrity(skin_seg)
 plot_num(skin_seg)
 correlation_table(skin_seg, "Class")
+corrplot(cor(skin_seg), method = "number")
 
 set.seed(123)
 skin_seg_split <- split_data(skin_seg)
@@ -102,6 +115,8 @@ occupancy2 <- read.table("data/datatest2.txt", header = TRUE, sep = ",", dec = "
 occupancy3 <- read.table("data/datatraining.txt", header = TRUE, sep = ",", dec = ".")
 occupancy <- rbind(occupancy1, occupancy2, occupancy3)
 occupancy <- occupancy %>% select(-date)
+n <- ncol(occupancy)
+occupancy[, -n] <- scale(occupancy[, -n])
 head(occupancy)
 
 

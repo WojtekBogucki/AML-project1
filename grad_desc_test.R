@@ -20,7 +20,7 @@ y_hat2 <- predict(model2, X_test)
 measure(y_hat, Y_test)
 measure(y_hat2, Y_test)
 plot(X_test, col=y_hat+1)
-
+plot(0:model$iters, model$costs, type='l', main = "loss")
 # Spambase ----------------------------------------------------------------
 load("data/spambase_train.Rda")
 load("data/spambase_test.Rda")

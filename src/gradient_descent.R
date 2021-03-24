@@ -24,7 +24,7 @@ gradient_descent <- function(X,Y, epsilon  = 1e-7, max_iter = 100, lr = 0.01){
     print(paste0("Epoch: ", i, " Cost: ", round(all_costs[i+1],4)))
     if(all(abs(all_costs[i+1] - all_costs[i]) < epsilon)) break
   }
-  structure(.Data = list(beta = theta, costs = all_costs), class = c("gd", "logreg", "model"))
+  structure(.Data = list(beta = theta, costs = all_costs, iters = i), class = c("gd", "logreg", "model"))
 }
 
 predict.gd <- function(object, X, prob = FALSE, ...){
@@ -56,7 +56,7 @@ sgd <- function(X,Y, epsilon = 1e-7, max_iter = 100, lr = 0.01){
     print(paste0("Epoch: ", i, " Cost: ", round(all_costs[i+1],4)))
     if(all(abs(all_costs[i+1] - all_costs[i]) < epsilon)) break
   }
-  structure(.Data = list(beta = theta, costs = all_costs), class = c("gd", "logreg", "model"))
+  structure(.Data = list(beta = theta, costs = all_costs, iters = i), class = c("gd", "logreg", "model"))
 }
 
 
