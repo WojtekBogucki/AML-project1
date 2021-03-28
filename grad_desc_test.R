@@ -2,6 +2,7 @@ source("src/measure.R")
 source("src/gradient_descent.R")
 source("src/iwls.R")
 source("src/util.R")
+source("src/optim_logreg.R")
 
 # Jain --------------------------------------------------------------------
 load("data/jain_train.Rda")
@@ -40,6 +41,36 @@ model <- gradient_descent(X, Y, 1e-4, max_iter=1000, lr=0.01)
 y_hat <- predict(model, X_test)
 model2 <- sgd(X, Y, 1e-4, 100, 1e-2)
 y_hat2 <- predict(model2, X_test)
+model3 <- iwls(X, Y, 1e-4)
+y_hat3 <- predict(model3, X_test)
+model4 <- optim_logreg(X, Y, method = "CG", epsilon = 1e-4)
+y_hat4 <- predict(model4, X_test)
+
+measure(y_hat, Y_test)
+measure(y_hat2, Y_test)
+measure(y_hat3, Y_test)
+measure(y_hat4, Y_test)
+plot(model)
+plot(model2)
+plot(model3)
+plot(model4)
+
+
+# mammography -------------------------------------------------------------
+load("data/mammography_train.Rda")
+load("data/mammography_test.Rda")
+head(mammography_train)
+
+X <- as.matrix(mammography_train[,-ncol(mammography_train)])
+Y <- as.matrix(mammography_train[,ncol(mammography_train)])
+
+X_test <- as.matrix(mammography_test[,-ncol(mammography_test)])
+Y_test <- as.matrix(mammography_test[,ncol(mammography_test)])
+
+model <- gradient_descent(X, Y, 1e-4, 1000, 0.01)
+y_hat <- predict(model, X_test)
+model2 <- sgd(X, Y, 1e-5, 1000, 0.01)
+y_hat2 <- predict(model2, X_test)
 model3 <- iwls(X, Y)
 y_hat3 <- predict(model3, X_test)
 
@@ -50,27 +81,9 @@ plot(model)
 plot(model2)
 plot(model3)
 
-
-# mammography -------------------------------------------------------------
-load("data/mammography_train.Rda")
-load("data/mammography_test.Rda")
-
-X <- as.matrix(mammography_train[,-ncol(mammography_train)])
-Y <- as.matrix(mammography_train[,ncol(mammography_train)])
-
-X_test <- as.matrix(mammography_test[,-ncol(mammography_test)])
-Y_test <- as.matrix(mammography_test[,ncol(mammography_test)])
-
-model <- gradient_descent(X, Y, 5000, 0.01)
-y_hat <- predict(model, X_test)
-model2 <- sgd(X, Y, 200, 0.001)
-y_hat2 <- predict(model2, X_test)
-
 table(y_hat, Y_test)
 table(y_hat2, Y_test)
 
-measure(y_hat, Y_test)
-measure(y_hat2, Y_test)
 
 # Skin segmentation -------------------------------------------------------
 load("data/skin_seg_train.Rda")
@@ -86,12 +99,18 @@ model <- gradient_descent(X, Y, 1e-4, 200, 0.01)
 y_hat <- predict(model, X_test)
 model2 <- sgd(X, Y, 1e-4, 20, 0.02)
 y_hat2 <- predict(model2, X_test)
-
-table(y_hat, Y_test)
-table(y_hat2, Y_test)
+model3 <- iwls(X, Y)
+y_hat3 <- predict(model3, X_test)
 
 measure(y_hat, Y_test)
 measure(y_hat2, Y_test)
+measure(y_hat3, Y_test)
+plot(model)
+plot(model2)
+plot(model3)
+
+table(y_hat, Y_test)
+table(y_hat2, Y_test)
 
 # Occupancy ---------------------------------------------------------------
 
@@ -104,14 +123,21 @@ Y <- as.matrix(occupancy_train[,ncol(occupancy_train)])
 X_test <- as.matrix(occupancy_test[,-ncol(occupancy_test)])
 Y_test <- as.matrix(occupancy_test[,ncol(occupancy_test)])
 
-model <- gradient_descent(X, Y, 1000, 0.001)
+model <- gradient_descent(X, Y, 1e-4, 1000, 0.01)
 y_hat <- predict(model, X_test)
-model2 <- sgd(X, Y, 20, 0.02)
+model2 <- sgd(X, Y, 1e-4, 20, 0.02)
 y_hat2 <- predict(model2, X_test)
+model3 <- iwls(X, Y)
+y_hat3 <- predict(model3, X_test)
+
+measure(y_hat, Y_test)
+measure(y_hat2, Y_test)
+measure(y_hat3, Y_test)
+plot(model)
+plot(model2)
+plot(model3)
 
 table(y_hat, Y_test)
 table(y_hat2, Y_test)
 
-measure(y_hat, Y_test)
-measure(y_hat2, Y_test)
 

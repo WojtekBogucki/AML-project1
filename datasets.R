@@ -125,7 +125,7 @@ status(occupancy)
 data_integrity(occupancy)
 plot_num(occupancy)
 correlation_table(occupancy, "Occupancy")
-cor(occupancy[,-6])
+corrplot(cor(occupancy), method = "number")
 
 set.seed(123)
 occupancy_split <- split_data(occupancy)
