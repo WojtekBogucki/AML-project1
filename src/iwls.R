@@ -13,7 +13,7 @@ iwls <- function(X, y, epsilon = 1e-7, max_iter = 100){
   for(i in 1:max_iter){
     p_vec <- as.numeric(p * (1 - p)) + 1e-8
     W <- sparseMatrix(m_vec, m_vec, x = p_vec)
-    W_inv <- sparseMatrix(m_vec, m_vec, x = p_vec)
+    W_inv <- sparseMatrix(m_vec, m_vec, x = 1/p_vec)
     z <- X%*%beta + W_inv %*% (y - p)
     beta <- solve(t(X) %*% W %*% X) %*% t(X) %*% W %*% z
     p <- sigmoid(X %*% beta)
