@@ -45,7 +45,7 @@ measure <- function(true_classes, predicted_classes){
     miss_rate = miss_rate,
     specificity = specificity,
     prevalence = prevalence,
-    false_omission_rate <- false_omission_rate,
+    false_omission_rate = false_omission_rate,
     fall_out = fall_out,
     positive_likelihood_ratio = positive_likelihood_ratio,
     negative_likelihood_ratio = negative_likelihood_ratio,
