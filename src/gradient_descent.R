@@ -5,7 +5,8 @@ init_theta <- function(n, type="uniform"){
   return(as.matrix(theta))
 }
 
-gradient_descent <- function(X,Y, epsilon  = 1e-7, max_iter = 100, lr = 0.01){
+gradient_descent <- function(X,Y, epsilon  = 1e-7, max_iter = 100, lr = 0.01,
+                             verbose=FALSE){
   X <- cbind(1, X)
   m <- nrow(X)
   n <- ncol(X)
@@ -16,14 +17,14 @@ gradient_descent <- function(X,Y, epsilon  = 1e-7, max_iter = 100, lr = 0.01){
     theta <- theta - lr*(t(X) %*% (g - Y)/m)
     g <- sigmoid(X %*% theta)
     all_costs[i+1] <- -sum(Y*log(g + 1e-8) + (1-Y)*log(1-g + 1e-8))/m
-    print(paste0("Epoch: ", i, " Cost: ", round(all_costs[i+1],4)))
+    if (verbose) print(paste0("Epoch: ", i, " Cost: ", round(all_costs[i+1],4)))
     if(all(abs(all_costs[i+1] - all_costs[i]) < epsilon)) break
   }
   structure(.Data = list(beta = theta, costs = all_costs, iters = i), class = c("gd", "logreg", "model"))
 }
 
 
-sgd <- function(X,Y, epsilon = 1e-7, max_iter = 100, lr = 0.01){
+sgd <- function(X,Y, epsilon = 1e-7, max_iter = 100, lr = 0.01, verbose=FALSE){
   X <- cbind(1, X)
   n <- ncol(X)
   m <- nrow(X)
@@ -42,7 +43,7 @@ sgd <- function(X,Y, epsilon = 1e-7, max_iter = 100, lr = 0.01){
     }
     g <- sigmoid(x_new %*% theta)
     all_costs[i+1] <- -mean(y_new*log(g + 1e-8) + (1-y_new)*log(1-g + 1e-8))
-    print(paste0("Epoch: ", i, " Cost: ", round(all_costs[i+1],4)))
+    if (verbose) print(paste0("Epoch: ", i, " Cost: ", round(all_costs[i+1],4)))
     if(all(abs(all_costs[i+1] - all_costs[i]) < epsilon)) break
   }
   structure(.Data = list(beta = theta, costs = all_costs, iters = i), class = c("gd", "logreg", "model"))
