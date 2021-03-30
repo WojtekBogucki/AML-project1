@@ -12,7 +12,15 @@ sigmoid <- function(x){
   return(sigm)
 }
 
-plot.logreg <- function(object){
+plot.logreg <- function(object, title="Loss"){
   df <- data.frame(iters=0:object$iters, loss=object$costs)
-  ggplot(data=df, aes(x=iters, y=loss)) + geom_line() + labs(title = "Loss") + xlab("Number of iterations")
+  ggplot(data=df, aes(x=iters, y=loss)) + geom_line() + labs(title = title) + xlab("Number of iterations")
+}
+
+compare_models <- function(models, labels, title="Loss"){
+  df <- data.frame(iters=numeric(), loss=numeric(), label=character())
+  for (i in 1:length(models)){
+    df <- rbind(df, data.frame(iters=0:models[[i]]$iters, loss=models[[i]]$costs, label=labels[i]))
+  }
+  ggplot(data=df, aes(x=iters, y=loss, color=label)) + geom_line(size=1) + labs(title = title, color="Algorithm") + xlab("Number of iterations")
 }
