@@ -15,18 +15,28 @@ Y <- as.matrix(jain_train[,ncol(jain_train)])
 X_test <- as.matrix(jain_test[,-ncol(jain_test)])
 Y_test <- as.matrix(jain_test[,ncol(jain_test)])
 
-model <- gradient_descent(X, Y, 1e-4, 2000, 0.01)
+max_iter <- 1000
+epsilon <- 1e-5
+lr <- 0.01
+
+model <- gradient_descent(X, Y, epsilon, max_iter, lr)
 y_hat <- predict(model, X_test)
-model2 <- sgd(X, Y, 1e-4 , 1000, 0.005)
+model2 <- sgd(X, Y, epsilon , max_iter, lr)
 y_hat2 <- predict(model2, X_test)
-model3 <- iwls(X, Y)
+model3 <- iwls(X, Y, epsilon, max_iter)
 y_hat3 <- predict(model3, X_test)
-measure(y_hat, Y_test)
+model4 <- optim_logreg(X, Y, method = "CG", epsilon, max_iter)
+y_hat4 <- predict(model4, X_test)
+model5 <- optim_logreg(X, Y, method = "BFGS", epsilon, max_iter)
+y_hat5 <- predict(model5, X_test)
+
+m1 <- measure(y_hat, Y_test)
 measure(y_hat2, Y_test)
 measure(y_hat3, Y_test)
 plot(model)
 plot(model2)
 plot(model3)
+compare_models(list(model,model2, model3, model4, model5), labels = c("GD", "SGD", "IWLS", "CG", "BFGS"))
 # Spambase ----------------------------------------------------------------
 load("data/spambase_train.Rda")
 load("data/spambase_test.Rda")
@@ -37,13 +47,17 @@ Y <- as.matrix(spambase_train[,ncol(spambase_train)])
 X_test <- as.matrix(spambase_test[,-ncol(spambase_test)])
 Y_test <- as.matrix(spambase_test[,ncol(spambase_test)])
 
-model <- gradient_descent(X, Y, 1e-4, max_iter=1000, lr=0.01)
+max_iter <- 100
+epsilon <- 1e-5
+lr <- 0.01
+
+model <- gradient_descent(X, Y, epsilon, max_iter, lr)
 y_hat <- predict(model, X_test)
-model2 <- sgd(X, Y, 1e-4, 100, 1e-2)
+model2 <- sgd(X, Y, epsilon , max_iter, lr)
 y_hat2 <- predict(model2, X_test)
-model3 <- iwls(X, Y, 1e-4)
+model3 <- iwls(X, Y, epsilon, max_iter)
 y_hat3 <- predict(model3, X_test)
-model4 <- optim_logreg(X, Y, method = "CG", epsilon = 1e-4)
+model4 <- optim_logreg(X, Y, method = "CG", epsilon)
 y_hat4 <- predict(model4, X_test)
 
 measure(y_hat, Y_test)
@@ -55,7 +69,13 @@ plot(model2)
 plot(model3)
 plot(model4)
 
-
+models <- list()
+lr <- c(0.05, 0.01, 0.005, 0.001)
+for (i in 1:4){
+  models[[2*i-1]] <- gradient_descent(X, Y, epsilon, max_iter, lr[i])
+  models[[2*i]] <- sgd(X, Y, epsilon , max_iter, lr[i])
+}
+compare_models(models, labels = paste(rep(c("GD", "SGD"), 4),"lr =", rep(lr, each=2)))
 # mammography -------------------------------------------------------------
 load("data/mammography_train.Rda")
 load("data/mammography_test.Rda")
