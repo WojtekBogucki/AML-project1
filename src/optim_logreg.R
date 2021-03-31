@@ -13,13 +13,13 @@ optim_logreg <- function(X,Y, method="BFGS", epsilon=1e-7, max_iter=1000){
     all_costs <<- rbind(all_costs, loss)
     return(loss)
   }
-  cost_grad <- function(theta, all_costs, i){
+  cost_grad <- function(theta){
     g <- sigmoid(X %*% theta)
     return(t(X) %*% (g - Y)/m)
   }
-  
+  if(method=="BFGS") max_iter <- max_iter + 1
   opt <- optim(theta, cost, cost_grad, method = method, control = list(type = 2, trace = 0, maxit=max_iter, reltol=epsilon))
-  structure(.Data = list(beta = opt$par, costs = unlist(all_costs), iters=opt$counts[1]-1), class = c("gd", "logreg", "model"))
+  structure(.Data = list(beta = opt$par, costs = unlist(all_costs), iters=opt$counts[1]-1), class = c("logreg", "model"))
 }
 
 # opt <- optim_logreg(x, y)
