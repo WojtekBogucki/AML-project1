@@ -2,10 +2,9 @@
 title: "Raport 1"
 author: "Wojciech Bogucki, Michał Pastuszka"
 date: "28 03 2021"
-geometry: margin=1cm
+geometry: margin=2cm
 output: 
-  pdf_document:
-    extra_dependencies: ["float"]
+  pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -42,7 +41,7 @@ df <- data.frame(datasets_names, nrows, ncols, class_ratio)
 kable(df, row.names = FALSE, digits = 2, caption = "Training dataset's dimensions", col.names = c("Dataset name","Number of obeservations", "Number of predictors", "Target class ratio" )) %>% kable_styling(full_width = FALSE, latex_options = "hold_position")
 
 ```
-
+All columns were standardized. Datasets were split on training set and test set in ratio $80:20$.
 
 # Methods
 
@@ -81,11 +80,11 @@ g1 <- compare_models(models, labels = paste("lr =", lr), title = "Stochastic Gra
 g1 <- g1 + labs(color="Params") + theme(legend.position="bottom")
 ```
 
-```{r lr_GD, fig.height=4, fig.width=9, fig.cap="\\label{fig:lr_SGD}Values of loss during training with different learning rates"}
+```{r lr_GD, fig.height=4, fig.width=9, fig.cap="Values of loss during training with different learning rates"}
 models <- list()
 max_iter <- 1000
 epsilon <- 1e-4
-lr <- c(0.75, 0.5, 0.3, 0.2, 0.1, 0.05, 0.01)
+lr <- c(1, 0.75, 0.5, 0.3, 0.2, 0.1, 0.05, 0.01)
 n <- length(lr)
 for (i in 1:n){
   models[[i]] <- gradient_descent(X, Y, epsilon, max_iter, lr[i])
@@ -95,7 +94,8 @@ g2 <- compare_models(models, labels = paste("lr =", lr), title = "Gradient Desce
 g2 <- g2 + labs(color="Params")  + theme(legend.position="bottom")
 ggarrange(g1 , g2, nrow=1)
 ```
-On figure \ref{fig:lr_SGD} we can see
+
+On Figure 1 we can see
 
 ### Value of log-likelihood function
 
@@ -147,7 +147,7 @@ g2 <- g2 + theme(legend.position="bottom")
 ```
 
 
-```{r conv, fig.height=4, fig.width=9,  fig.cap="\\label{fig:lr_SGD}Values of loss during training for different algorithms"}
+```{r conv, fig.height=4, fig.width=9,  fig.cap="Values of loss during training for different algorithms"}
 ggarrange(g1 , g2, nrow=1)
 ```
 
