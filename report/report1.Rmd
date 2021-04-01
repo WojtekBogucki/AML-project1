@@ -11,6 +11,9 @@ output:
 knitr::opts_chunk$set(echo = FALSE, fig.pos = "!H")
 library(kableExtra)
 library(ggpubr)
+library(ggplot2)
+library(MASS)
+library(class)
 source("src/measure.R")
 source("src/gradient_descent.R")
 source("src/iwls.R")
@@ -224,5 +227,156 @@ df2 <- rbind(df2, data.frame(dataset = "Mammography", model$costs[max_iter+1],mo
 <!-- knitr::kable(df, digits = 3, row.names = FALSE, caption = "Final loss for different algorithms on various datasets", col.names = c("Algorithm", "Jain", "Spambase", "Mammography", "Occupancy")) %>% kable_styling(full_width = FALSE) %>% column_spec(1, border_right = TRUE) -->
 <!-- ``` -->
 
+## Model performance analysis
+The aim of this experiment was to compare the performance of logistic regression with other popular models.
 
+```{r get_measures, echo=FALSE}
+get_measures <- function(X, Y, X_test, Y_test, do_knn=TRUE){
+  gd.model <- gradient_descent(X, Y, 1e-4, 1000, 0.03)
+  gd.pred <- predict(gd.model, X_test)
+  sgd.model <- sgd(X, Y, 1e-4 , 1000, 0.01, verbose=FALSE)
+  sgd.pred <- predict(sgd.model, X_test)
+  iwls.model <- iwls(X, Y, 1e-4 , 1000)
+  iwls.pred <- predict(iwls.model, X_test)
+  bfgs.model <- optim_logreg(X, Y, "BFGS", 1e-4, 1000)
+  bfgs.pred <- predict(bfgs.model, X_test)
+  cg.model <- optim_logreg(X, Y, "CG", 1e-4)
+  cg.pred <- predict(cg.model, X_test)
+  
+  lda.model <- lda(X, Y)
+  lda.pred <- predict(lda.model, X_test)$class
+  lda.pred <- as.numeric(levels(lda.pred))[lda.pred]
+  qda.model <- qda(x=X, grouping = Y)
+  qda.pred <- predict(qda.model, as.data.frame(X_test))$class
+  qda.pred <- as.numeric(levels(qda.pred))[qda.pred]
+  
+  if(do_knn){
+    knn1.pred <- knn(train = X, test = X_test, cl = Y, k = 1)
+    knn1.pred <- as.numeric(levels(knn1.pred))[knn1.pred]
+    knn3.pred <- knn(train = X, test = X_test, cl = Y, k = 3)
+    knn3.pred <- as.numeric(levels(knn3.pred))[knn3.pred]
+    knn5.pred <- knn(train = X, test = X_test, cl = Y, k = 5)
+    knn5.pred <- as.numeric(levels(knn5.pred))[knn5.pred]
+  }else{
+    knn1.pred <- rep(NA, length.out=length(iwls.pred))
+    knn3.pred <- rep(NA, length.out=length(iwls.pred))
+    knn5.pred <- rep(NA, length.out=length(iwls.pred))
+  }
+  
+  
+  predictions <- list(gd = gd.pred, sgd = sgd.pred, iwls = iwls.pred, 
+                      bfgs = bfgs.pred, cg = cg.pred, lda = lda.pred, 
+                      qda = qda.pred, knn1 = knn1.pred, knn3 = knn3.pred, 
+                      knn5 = knn5.pred)
+  
+  
+  measures <- data.frame(t(sapply(predictions, 
+                                  function(x) unlist(measure(Y_test, x)))))
+  if(!do_knn){
+    measures['knn1',] <- rep(0, length.out = ncol(measures))
+    measures['knn3',] <- rep(0, length.out = ncol(measures))
+    measures['knn5',] <- rep(0, length.out = ncol(measures))
+  }
+  
+  measures['model'] <- rownames(measures)
+  measures['model type'] <- c(rep('logistic regression', 5), 
+                              rep('discriminatory analysis', 2),
+                              rep('k nearest neighbors', 3))
+  measures_melt <- reshape2::melt(measures, id.vars = c('model', 'model type'))
+  measures_melt[measures_melt$variable %in% c('accuracy', 
+                'f1_score', 'r2_score'),]
+}
+
+```
+
+```{r jain, echo=FALSE, fig.width=10, fig.height=2.5, cache=TRUE}
+X <- as.matrix(jain_train[,-ncol(jain_train)])
+Y <- as.matrix(jain_train[,ncol(jain_train)])
+
+X_test <- as.matrix(jain_test[,-ncol(jain_test)])
+Y_test <- as.matrix(jain_test[,ncol(jain_test)])
+
+measures <- get_measures(X, Y, X_test, Y_test)
+
+ggplot(measures, 
+       aes(x = reorder(model, -value), y = value, fill = `model type`)) + 
+  geom_bar(stat='identity') + scale_fill_brewer(palette=1, type='qual') + 
+  facet_wrap(vars(variable), scales='free', ncol = 3) + 
+  labs(title='Jain', x='Model') +
+  guides(fill=FALSE) +
+  theme(axis.text.x = element_text(angle = 35, vjust = 1, hjust=1))
+```
+
+```{r spambase, echo=FALSE, fig.width=10, fig.height=2.5, cache=TRUE}
+X <- as.matrix(spambase_train[,-ncol(spambase_train)])
+Y <- as.matrix(spambase_train[,ncol(spambase_train)])
+
+X_test <- as.matrix(spambase_test[,-ncol(spambase_test)])
+Y_test <- as.matrix(spambase_test[,ncol(spambase_test)])
+
+measures <- get_measures(X, Y, X_test, Y_test)
+
+ggplot(measures, 
+       aes(x = reorder(model, -value), y = value, fill = `model type`)) + 
+  geom_bar(stat='identity') + scale_fill_brewer(palette=1, type='qual') + 
+  facet_wrap(vars(variable), scales='free', ncol = 3) + 
+  labs(title='Spambase', x='Model') +
+  guides(fill=FALSE) +
+  theme(axis.text.x = element_text(angle = 35, vjust = 1, hjust=1))
+```
+
+```{r mammography, echo=FALSE, fig.width=10, fig.height=2.5, cache=TRUE}
+X <- as.matrix(mammography_train[,-ncol(mammography_train)])
+Y <- as.matrix(mammography_train[,ncol(mammography_train)])
+
+X_test <- as.matrix(mammography_test[,-ncol(mammography_test)])
+Y_test <- as.matrix(mammography_test[,ncol(mammography_test)])
+
+measures <- get_measures(X, Y, X_test, Y_test, do_knn = FALSE)
+
+ggplot(measures, 
+       aes(x = reorder(model, -value), y = value, fill = `model type`)) + 
+  geom_bar(stat='identity') + scale_fill_brewer(palette=1, type='qual') + 
+  facet_wrap(vars(variable), scales='free', ncol = 3) + 
+  labs(title='Mammography', x='Model') +
+  guides(fill=FALSE) +
+  theme(axis.text.x = element_text(angle = 35, vjust = 1, hjust=1))
+```
+
+```{r skinseg, echo=FALSE, fig.width=10, fig.height=2.5, cache=TRUE}
+X <- as.matrix(skin_seg_train[,-ncol(skin_seg_train)])
+Y <- as.matrix(skin_seg_train[,ncol(skin_seg_train)])
+
+X_test <- as.matrix(skin_seg_test[,-ncol(skin_seg_test)])
+Y_test <- as.matrix(skin_seg_test[,ncol(skin_seg_test)])
+
+
+measures <- get_measures(X, Y, X_test, Y_test, do_knn = FALSE)
+
+ggplot(measures, 
+       aes(x = reorder(model, -value), y = value, fill = `model type`)) + 
+  geom_bar(stat='identity') + scale_fill_brewer(palette=1, type='qual') + 
+  facet_wrap(vars(variable), scales='free', ncol = 3) + 
+  labs(title='Skin segmentation', x='Model') +
+  guides(fill=FALSE) +
+  theme(axis.text.x = element_text(angle = 35, vjust = 1, hjust=1))
+```
+
+```{r occupancy, echo=FALSE, fig.width=10, fig.height=2.5, cache=TRUE}
+X <- as.matrix(occupancy_train[,-ncol(occupancy_train)])
+Y <- as.matrix(occupancy_train[,ncol(occupancy_train)])
+
+X_test <- as.matrix(occupancy_test[,-ncol(occupancy_test)])
+Y_test <- as.matrix(occupancy_test[,ncol(occupancy_test)])
+
+measures <- get_measures(X, Y, X_test, Y_test)
+
+ggplot(measures, 
+       aes(x = reorder(model, -value), y = value, fill = `model type`)) + 
+  geom_bar(stat='identity') + scale_fill_brewer(palette=1, type='qual') + 
+  facet_wrap(vars(variable), scales='free', ncol = 3) + 
+  labs(title='Occupancy', x='Model') +
+  guides(fill=FALSE) +
+  theme(axis.text.x = element_text(angle = 35, vjust = 1, hjust=1))
+```
 
