@@ -1,0 +1,228 @@
+---
+title: "Raport 1"
+author: "Wojciech Bogucki, Michał Pastuszka"
+date: "28 03 2021"
+geometry: margin=1cm
+output: 
+  pdf_document:
+    extra_dependencies: ["float"]
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.pos = "!H")
+library(kableExtra)
+library(ggpubr)
+source("src/measure.R")
+source("src/gradient_descent.R")
+source("src/iwls.R")
+source("src/util.R")
+source("src/optim_logreg.R")
+load("data/jain_train.Rda")
+load("data/jain_test.Rda")
+load("data/spambase_train.Rda")
+load("data/spambase_test.Rda")
+load("data/mammography_train.Rda")
+load("data/mammography_test.Rda")
+load("data/skin_seg_train.Rda")
+load("data/skin_seg_test.Rda")
+load("data/occupancy_train.Rda")
+load("data/occupancy_test.Rda")
+set.seed(123)
+
+
+```
+# Datasets
+```{r data_stats, fig.width=8}
+datasets_names <- c("Jain", "Spambase", "Mammography","Skin segmentation", "Occupancy")
+nrows<- c(dim(jain_train)[1], dim(spambase_train)[1], dim(mammography_train)[1], dim(skin_seg_train)[1], dim(occupancy_train)[1])
+ncols <- c(dim(jain_train)[2], dim(spambase_train)[2], dim(mammography_train)[2], dim(skin_seg_train)[2], dim(occupancy_train)[2]) - 1
+class_ratio <- c(mean(jain_train$V3), mean(spambase_train$TARGET), mean(mammography_train$class), mean(skin_seg_train$Class), mean(occupancy_train$Occupancy))
+df <- data.frame(datasets_names, nrows, ncols, class_ratio)
+
+kable(df, row.names = FALSE, digits = 2, caption = "Training dataset's dimensions", col.names = c("Dataset name","Number of obeservations", "Number of predictors", "Target class ratio" )) %>% kable_styling(full_width = FALSE, latex_options = "hold_position")
+
+```
+
+
+# Methods
+
+Three main optimization algorithms for logistic regression were tested:
+
+* Gradient Descent (GD)
+* Stochastic Gradient Descent (SGD)
+* Iterated Weighted Least Squares (IWLS)
+
+And two additional algorithms using function `optim()`:
+
+* Conjugate Gradient (CG)
+* Broyden–Fletcher–Goldfarb–Shanno (BFGS)
+
+# Experiments
+## Convergence analysis
+The aim of this analysis was to compare convergence of different algorithms.
+
+### Learning rate
+
+```{r lr_SGD}
+X <- as.matrix(spambase_train[,-ncol(spambase_train)])
+Y <- as.matrix(spambase_train[,ncol(spambase_train)])
+
+
+models <- list()
+max_iter <- 100
+epsilon <- 1e-4
+lr <- c(0.05, 0.01, 0.005, 0.001)
+for (i in 1:4){
+  models[[i]] <- sgd(X, Y, epsilon , max_iter, lr[i])
+}
+
+
+g1 <- compare_models(models, labels = paste("lr =", lr), title = "Stochastic Gradient Descent")
+g1 <- g1 + labs(color="Params") + theme(legend.position="bottom")
+```
+
+```{r lr_GD, fig.height=4, fig.width=9, fig.cap="\\label{fig:lr_SGD}Values of loss during training with different learning rates"}
+models <- list()
+max_iter <- 1000
+epsilon <- 1e-4
+lr <- c(0.75, 0.5, 0.3, 0.2, 0.1, 0.05, 0.01)
+n <- length(lr)
+for (i in 1:n){
+  models[[i]] <- gradient_descent(X, Y, epsilon, max_iter, lr[i])
+
+}
+g2 <- compare_models(models, labels = paste("lr =", lr), title = "Gradient Descent")
+g2 <- g2 + labs(color="Params")  + theme(legend.position="bottom")
+ggarrange(g1 , g2, nrow=1)
+```
+On figure \ref{fig:lr_SGD} we can see
+
+### Value of log-likelihood function
+
+```{r prep_models_jain, warning=FALSE}
+X <- as.matrix(jain_train[,-ncol(jain_train)])
+Y <- as.matrix(jain_train[,ncol(jain_train)])
+
+max_iter <- 100
+epsilon <- 0
+
+
+model <- gradient_descent(X, Y, epsilon, max_iter, 0.75)
+model2 <- sgd(X, Y, epsilon , max_iter, 0.01)
+model3 <- iwls(X, Y, epsilon, max_iter)
+model4 <- optim_logreg(X, Y, method = "CG", epsilon, max_iter)
+model5 <- optim_logreg(X, Y, method = "BFGS", epsilon, max_iter)
+labels <- c("GD", "SGD", "IWLS", "CG", "BFGS")
+
+df <- data.frame(algorithm=labels, jain=c(model$costs[max_iter+1],model2$costs[max_iter+1], model3$costs[max_iter+1], model4$costs[max_iter+1], model5$costs[max_iter+1]))
+
+df2 <- data.frame(dataset = "Jain", model$costs[max_iter+1],model2$costs[max_iter+1], model3$costs[max_iter+1], model4$costs[max_iter+1], model5$costs[max_iter+1])
+
+g1 <- compare_models(list(model,model2, model3, model4, model5), labels = labels , title = "Dataset Jain")
+g1 <- g1 + theme(legend.position="bottom")
+
+```
+
+
+
+```{r prep_models_spam, warning=FALSE}
+X <- as.matrix(spambase_train[,-ncol(spambase_train)])
+Y <- as.matrix(spambase_train[,ncol(spambase_train)])
+
+
+max_iter <- 100
+epsilon <- 0
+
+model <- gradient_descent(X, Y, epsilon, max_iter, 0.75)
+model2 <- sgd(X, Y, epsilon , max_iter, 0.01)
+model3 <- iwls(X, Y, epsilon, max_iter)
+model4 <- optim_logreg(X, Y, method = "CG", epsilon, max_iter)
+model5 <- optim_logreg(X, Y, method = "BFGS", epsilon, max_iter)
+
+df <- cbind(df, data.frame(spambase=c(model$costs[max_iter+1],model2$costs[max_iter+1], model3$costs[max_iter+1], model4$costs[max_iter+1], model5$costs[max_iter+1])))
+df2 <- rbind(df2, data.frame(dataset = "Spambase", model$costs[max_iter+1],model2$costs[max_iter+1], model3$costs[max_iter+1], model4$costs[max_iter+1], model5$costs[max_iter+1]))
+
+g2 <- compare_models(list(model,model2, model3, model4, model5), labels = c("GD", "SGD", "IWLS", "CG", "BFGS"), title = "Dataset spambase")
+g2 <- g2 + theme(legend.position="bottom")
+```
+
+
+```{r conv, fig.height=4, fig.width=9,  fig.cap="\\label{fig:lr_SGD}Values of loss during training for different algorithms"}
+ggarrange(g1 , g2, nrow=1)
+```
+
+```{r prep_models_mamm, warning=FALSE}
+X <- as.matrix(mammography_train[,-ncol(mammography_train)])
+Y <- as.matrix(mammography_train[,ncol(mammography_train)])
+
+X_test <- as.matrix(mammography_test[,-ncol(mammography_test)])
+Y_test <- as.matrix(mammography_test[,ncol(mammography_test)])
+
+max_iter <- 100
+epsilon <- 0
+lr <- 0.01
+
+model <- gradient_descent(X, Y, epsilon, max_iter, lr)
+model2 <- sgd(X, Y, epsilon , max_iter, lr)
+model3 <- iwls(X, Y, epsilon, max_iter)
+model4 <- optim_logreg(X, Y, method = "CG", epsilon, max_iter)
+model5 <- optim_logreg(X, Y, method = "BFGS", epsilon, max_iter)
+
+df <- cbind(df, data.frame(mammography=c(model$costs[max_iter+1],model2$costs[max_iter+1], model3$costs[max_iter+1], model4$costs[max_iter+1], model5$costs[max_iter+1])))
+df2 <- rbind(df2, data.frame(dataset = "Mammography", model$costs[max_iter+1],model2$costs[max_iter+1], model3$costs[max_iter+1], model4$costs[max_iter+1], model5$costs[max_iter+1]))
+```
+
+
+<!-- ```{r conv_mamm} -->
+<!-- compare_models(list(model,model2, model3, model4, model5), labels = c("GD", "SGD", "IWLS", "CG", "BFGS"), title = "Change of loss function for different algorithms on dataset mammography") -->
+<!-- ``` -->
+
+<!-- ```{r prep_models_skin, warning=FALSE} -->
+<!-- X <- as.matrix(skin_seg_train[,-ncol(skin_seg_train)]) -->
+<!-- Y <- as.matrix(skin_seg_train[,ncol(skin_seg_train)]) -->
+
+<!-- X_test <- as.matrix(skin_seg_test[,-ncol(skin_seg_test)]) -->
+<!-- Y_test <- as.matrix(skin_seg_test[,ncol(skin_seg_test)]) -->
+
+<!-- max_iter <- 100 -->
+<!-- epsilon <- 0 -->
+<!-- lr <- 0.01 -->
+
+<!-- model <- gradient_descent(X, Y, epsilon, max_iter, lr) -->
+<!-- model2 <- sgd(X, Y, epsilon , max_iter, lr) -->
+<!-- model3 <- iwls(X, Y, epsilon, max_iter) -->
+<!-- model4 <- optim_logreg(X, Y, method = "CG", epsilon, max_iter) -->
+<!-- model5 <- optim_logreg(X, Y, method = "BFGS", epsilon, max_iter) -->
+
+<!-- df2 <- rbind(df2, data.frame(dataset = "Skin segmentation", model$costs[max_iter+1],model2$costs[max_iter+1], model3$costs[max_iter+1], model4$costs[max_iter+1], model5$costs[max_iter+1])) -->
+<!-- ``` -->
+
+
+<!-- ```{r prep_models_occ, warning=FALSE} -->
+<!-- X <- as.matrix(occupancy_train[,-ncol(occupancy_train)]) -->
+<!-- Y <- as.matrix(occupancy_train[,ncol(occupancy_train)]) -->
+
+<!-- X_test <- as.matrix(occupancy_test[,-ncol(occupancy_test)]) -->
+<!-- Y_test <- as.matrix(occupancy_test[,ncol(occupancy_test)]) -->
+
+<!-- max_iter <- 100 -->
+<!-- epsilon <- 0 -->
+<!-- lr <- 0.01 -->
+
+<!-- model <- gradient_descent(X, Y, epsilon, max_iter, lr) -->
+<!-- model2 <- sgd(X, Y, epsilon , max_iter, lr) -->
+<!-- model3 <- iwls(X, Y, epsilon, max_iter) -->
+<!-- model4 <- optim_logreg(X, Y, method = "CG", epsilon, max_iter) -->
+<!-- model5 <- optim_logreg(X, Y, method = "BFGS", epsilon, max_iter) -->
+
+<!-- df <- cbind(df, data.frame(occupancy=c(model$costs[max_iter+1],model2$costs[max_iter+1], model3$costs[max_iter+1], model4$costs[max_iter+1], model5$costs[max_iter+1]))) -->
+<!-- df2 <- rbind(df2, data.frame(dataset = "Occupancy", model$costs[max_iter+1],model2$costs[max_iter+1], model3$costs[max_iter+1], model4$costs[max_iter+1], model5$costs[max_iter+1])) -->
+<!-- ``` -->
+
+
+<!-- ```{r table} -->
+<!-- knitr::kable(df, digits = 3, row.names = FALSE, caption = "Final loss for different algorithms on various datasets", col.names = c("Algorithm", "Jain", "Spambase", "Mammography", "Occupancy")) %>% kable_styling(full_width = FALSE) %>% column_spec(1, border_right = TRUE) -->
+<!-- ``` -->
+
+
+
