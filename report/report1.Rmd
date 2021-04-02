@@ -242,10 +242,22 @@ knitr::kable(df, digits = 3, row.names = FALSE, caption = "Final loss for differ
 ```
 
 ## Model performance analysis
-The aim of this experiment was to compare the performance of logistic regression with other popular models.
+The aim of this experiment was to compare the performance of logistic regression with other popular models. We tested all optimization methods mentioned earlier together with $k$--nearest neighbors using $k={1,2,3}$ as well as linear and quadratic discriminant analysis. Following plots show accuracy, $F1$ score and $R^2$ measure achieved by this models.
+
+# Comparison of opimization methods.
+
+As our results show there is no significant difference in quality of fit achieved by used methods, with the exception of gradient descent. This method constantly underperformed in all tests, which is in line with previous results that show the slowest convergence rate for this method.
+
+# Comparison with other models.
+
+The `knn` models achieved best scores on sets `Jain` and `Occupancy`. The difference is especially visible in the first case. The dataset `Jain` consists of two classes that do not overlap, but cannot be separated easily by a linear or quadratic plane. This case shows where this type of model performs best. It is able to create a very good fit where the separating plane is highly irregular. It has however serious problems, when the classes highly overlap. In cases of the sets `Mammography` and `Skin segmentation` we were unable to  build a `knn` model at all, as it returned a `too many ties` error.
+
+In case of `lda` and `qda` at first glance they appear to perform generally worse that logistic regression. A notable exception is the dataset `Skin segmentation`, where `qda` achieved near perfect fit and significantly outperformed competition. This suggests that this set, unlike the rest, matches well the assumptions this model is based on. Discriminant analysis models seem to perform particularly poorly on the set `Mammography` where they both present a negative $R^2$ score, suggesting a fit worse than a null model. This dataset however contains highly unbalanced classes. Looking at the recall statistic we see that this models were able to detect significantly more positive cases than logistic regression. It came at the cost of worse precision, but in the case of medical applications models with high recall are usually preferred. We have to still keep in mind, that we could possibly achieve similar or better results using the logistic model by lowering the classification threshold. Therefore, comparing those two models would require more detailed analysis. This case shows that looking only at measures such as `accuracy`, `R^2`  and `F1` may be misleading in the case of unbalanced classes.
+
+Our experiments show no clear winner among the tested methods. Logistic regression appears to be the most well rounded of all, not performing the worst in any of the tests, but picking a correct model for the situation is the best option.
 
 ```{r get_measures, echo=FALSE}
-get_measures <- function(X, Y, X_test, Y_test, do_knn=TRUE){
+get_measures <- function(X, Y, X_test, Y_test, do_knn=TRUE, add_prs=FALSE){
   gd.model <- gradient_descent(X, Y, 1e-4, 1000, 0.03)
   gd.pred <- predict(gd.model, X_test)
   sgd.model <- sgd(X, Y, 1e-4 , 1000, 0.01, verbose=FALSE)
@@ -297,8 +309,11 @@ get_measures <- function(X, Y, X_test, Y_test, do_knn=TRUE){
                               rep('discriminatory analysis', 2),
                               rep('k nearest neighbors', 3))
   measures_melt <- reshape2::melt(measures, id.vars = c('model', 'model type'))
-  measures_melt[measures_melt$variable %in% c('accuracy', 
-                'f1_score', 'r2_score'),]
+  desired_measures <- c('accuracy', 'f1_score', 'r2_score')
+  if(add_prs){
+    desired_measures <- c(desired_measures, 'precision', 'recall', 'specificity')
+  }
+  measures_melt[measures_melt$variable %in% desired_measures,]
 }
 
 ```
@@ -339,14 +354,14 @@ ggplot(measures,
   theme(axis.text.x = element_text(angle = 35, vjust = 1, hjust=1))
 ```
 
-```{r mammography, echo=FALSE, fig.width=10, fig.height=2.5, cache=TRUE}
+```{r mammography, echo=FALSE, fig.width=10, fig.height=4, cache=TRUE}
 X <- as.matrix(mammography_train[,-ncol(mammography_train)])
 Y <- as.matrix(mammography_train[,ncol(mammography_train)])
 
 X_test <- as.matrix(mammography_test[,-ncol(mammography_test)])
 Y_test <- as.matrix(mammography_test[,ncol(mammography_test)])
 
-measures <- get_measures(X, Y, X_test, Y_test, do_knn = FALSE)
+measures <- get_measures(X, Y, X_test, Y_test, FALSE, TRUE)
 
 ggplot(measures, 
        aes(x = reorder(model, -value), y = value, fill = `model type`)) + 
@@ -393,4 +408,3 @@ ggplot(measures,
   guides(fill=FALSE) +
   theme(axis.text.x = element_text(angle = 35, vjust = 1, hjust=1))
 ```
-
