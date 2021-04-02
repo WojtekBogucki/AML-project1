@@ -1,3 +1,5 @@
 *.Rproj
 .Rproj.user/*
 .Rproj.user
+report/report1_cache/*
+report/report1_files/*
