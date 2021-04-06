@@ -320,7 +320,10 @@ get_measures <- function(X, Y, X_test, Y_test, do_knn=TRUE, add_prs=FALSE){
   if(add_prs){
     desired_measures <- c(desired_measures, 'precision', 'recall', 'specificity')
   }
-  measures_melt[measures_melt$variable %in% desired_measures,]
+  mm <- measures_melt[measures_melt$variable %in% desired_measures,]
+  mm$variable_f <- factor(mm$variable, levels=c('accuracy', 'f1_score', 'r2_score',
+                                               'precision', 'recall', 'specificity'))
+  mm
 }
 
 ```
@@ -373,7 +376,7 @@ measures <- get_measures(X, Y, X_test, Y_test, FALSE, TRUE)
 ggplot(measures, 
        aes(x = reorder(model, -value), y = value, fill = `model type`)) + 
   geom_bar(stat='identity') + scale_fill_brewer(palette=1, type='qual') + 
-  facet_wrap(vars(variable), scales='free', ncol = 3) + 
+  facet_wrap(vars(variable_f), scales='free', ncol = 3) + 
   labs(title='Mammography', x='Model') +
   guides(fill=FALSE) +
   theme(axis.text.x = element_text(angle = 35, vjust = 1, hjust=1))
