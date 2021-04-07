@@ -1,3 +1,4 @@
+# preparing datasets and saving training and test sets
 library(ggplot2)
 library(dplyr)
 library(funModeling)

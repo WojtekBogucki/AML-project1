@@ -58,7 +58,7 @@ Three main optimization algorithms for logistic regression were tested: **Gradie
 The aim of this analysis was to compare convergence of different algorithms. Stopping rules were: change of value of loss function lower than $10^{-4}$ after iteration and maximal limit of iterations -- $100$.
 
 ### Learning rate
-Firstly, impact of learning rate in gradient descent algorithms was tested on dataset `spambase`. On Figure 1 we can see that SGD is instable for big learning rate ($0.05$). The fastest and the best learning rate equals $0.01$. On the other hand, for GD the higher value of learning rate the faster algorithm converges.
+Firstly, impact of learning rate in gradient descent algorithms was tested on dataset `spambase`. On Figure 1 we can see that SGD is instable for big learning rate ($0.05$). The fastest and the best learning rate equals to $0.01$. On the other hand, for GD the higher value of learning rate the faster algorithm converges.
 
 
 ```{r lr_SGD, cache=TRUE}
