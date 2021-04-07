@@ -1,7 +1,7 @@
 ---
-title: "Raport 1"
+title: "Project 1"
 author: "Wojciech Bogucki, Michał Pastuszka"
-date: "28 03 2021"
+date: "07 04 2021"
 geometry: margin=1cm
 output: 
   pdf_document
